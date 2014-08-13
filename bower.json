@@ -1,6 +1,6 @@
 {
   "name": "backbone.syphon.extras",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Fork of: Serialize a Backbone.View in to a JavaScript object.",
   "main": "./lib/backbone.syphon.js",
   "homepage": "https://github.com/beak-lab/backbone.syphon",
