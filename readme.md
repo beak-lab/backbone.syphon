@@ -14,7 +14,14 @@ Backbone.Syphon.serialize(this, {
 })
 ```
 
-## The origional doc:
+or
+
+You can set them as defaults globally
+```js
+Backbone.Syphon.extraFields.push('[data-to-syphon]');
+```
+
+## The original doc:
 
 Working with form elements in a Backbone view can become
 very tedious very quickly. You will either end up writing
