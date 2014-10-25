@@ -21,6 +21,27 @@ You can set them as defaults globally
 Backbone.Syphon.extraFields.push('[data-to-syphon]');
 ```
 
+Added support to serialize form data to array
+Eg:
+```html
+<input type="text" name="a[][b]" value="1">
+<input type="text" name="a[][c]" value="2">
+
+<input type="text" name="a[][b]" value="2">
+<input type="text" name="a[][c]" value="3">
+```
+
+will serialize to
+
+```js
+a : [{
+    b: 1,
+    c: 2
+  }, {
+    b: 2,
+    c: 3
+  }]
+```
 ## The original doc:
 
 Working with form elements in a Backbone view can become
