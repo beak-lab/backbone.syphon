@@ -21,26 +21,46 @@ You can set them as defaults globally
 Backbone.Syphon.extraFields.push('[data-to-syphon]');
 ```
 
-Added support to serialize form data to array
+Added support: serialize/deserialize array of object or nested array
+
 Eg:
 ```html
-<input type="text" name="a[][b]" value="1">
-<input type="text" name="a[][c]" value="2">
+<input type="text" name="banks[@0][name]" value="HSBC">
+<input type="text" name="banks[@1][name]" value="BOC">
 
-<input type="text" name="a[][b]" value="2">
-<input type="text" name="a[][c]" value="3">
+<input type="text" name="banks[@0][accounts][@0][nos][]" value="881">
+<input type="text" name="banks[@0][accounts][@0][type]" value="Saving">
+<input type="text" name="banks[@0][accounts][@1][nos][]" value="882,883">
+<input type="text" name="banks[@0][accounts][@0][type]" value="Current">
+
 ```
 
 will serialize to
 
 ```js
-a : [{
-    b: 1,
-    c: 2
-  }, {
-    b: 2,
-    c: 3
-  }]
+{
+  'banks': [
+    {
+      'name': 'HSBC',
+      'accounts': [
+        {
+          'nos': [
+            '881'
+          ],
+          'type': 'Current'
+        },
+        {
+          'nos': [
+            '882,883'
+          ]
+        }
+      ]
+    },
+    {
+      'name': 'BOC'
+    }
+  ]
+}
 ```
 ## The original doc:
 
