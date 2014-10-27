@@ -45,6 +45,8 @@ Syphon.serialize = function(view, options){
     }
   });
 
+  // Fork extension
+  data = transformObjToArray(data);
   // Done; send back the results.
   return data;
 };
@@ -60,6 +62,8 @@ Syphon.deserialize = function(view, data, options){
   // Get all of the elements to process
   var elements = getInputElements(view, config);
 
+  // fork extension
+  data = transformArrayToObj(data);
   // Flatten the data structure that we are deserializing
   var flattenedData = flattenData(config, data);
 
@@ -214,6 +218,97 @@ var assignKeyValue = function(obj, keychain, value) {
 
   return obj;
 };
+
+//fork extension: transfer obj prop start with @ to array..
+// e.g. {a : {"@1" : 1, "@0" : 2}} => {a : [2, 1]}
+
+var transformObjToArray = function(obj){
+
+	// if obj is array or not an object then return early
+	if(_.isArray(obj) || !_.isObject(obj)){
+		return obj;
+	}
+	
+	var keys = _.keys(obj);
+	
+	// check if all the keys are started with @ and followed by numbers
+	// e.g. @12, @24, ..
+	
+	var allMarkedAsArray = true;
+
+	_.each(keys, function(key){
+		if (key.match(/^@(\d+)/) == null){
+			allMarkedAsArray = false;
+		}
+	});
+	
+	var transformToArray = keys.length > 0 && allMarkedAsArray;
+	
+	// sort the keys
+	// e.g. @12, @0, @43 => @0, @12, @43
+	
+	if (transformToArray){
+		keys.sort(function(a, b){
+			var v1 = parseInt(a.match(/^@(\d+)/)[1]);
+			var v2 = parseInt(b.match(/^@(\d+)/)[1]);
+			return v1 - v2;
+		});
+	}
+
+	var arr = [];
+	
+	_.each(keys, function(key){
+		if (transformToArray){
+			// transfrom object to array
+			arr.push(obj[key]);
+			// keep trasvering
+			transformObjToArray(obj[key]);
+			
+		} else {
+			// keep trasvering
+			obj[key] = transformObjToArray(obj[key]);
+		}
+	});
+	
+  return transformToArray ? arr : obj;
+}
+
+//transfer array to obj with prop started with @, 
+//expect if the array contains no object or array as a element
+// e.g. {a : [2, 1]} = > {a : [2, 1]}
+// e.g. {a : [2, 1], b: [{a : 1}, {a: 2}]} = > {a : [2, 1], b: {"@0" : {a : 1}, "@1" : {a : 2}}}
+
+var transformArrayToObj = function(obj){
+	if(_.isArray(obj)){
+		
+		var arrayOfBasic = true;
+                // check if all element in the array contains no array and object
+		_.each(obj, function(val){
+			if (_.isArray(val) || _.isObject(val)){
+				arrayOfBasic = false;
+			}
+		});
+		
+		if (arrayOfBasic) {
+			return obj;
+		}
+		
+		var arr = obj;
+		obj = {};
+		// make array into object
+		_.each(arr, function(val, i){
+			obj["@" + i] = transformArrayToObj(val);
+		});
+		
+	} else if(_.isObject(obj)){
+		var keys = _.keys(obj);
+		_.each(keys, function(key){
+			obj[key] = transformArrayToObj(obj[key]);
+		});
+	}
+	
+	return obj;
+}
 
 // Flatten the data structure in to nested strings, using the
 // provided `KeyJoiner` function.
